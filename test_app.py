@@ -6,7 +6,19 @@ import unittest
 import requests
 
 class TestApp(unittest.TestCase):
+    # Name of the environment variable we get the server URL from
     server_url_env_name = "COMPANYNAME_SERVER_URL"
+    # Several ways to POST incorrectly to /temp, to be used in multiple tests
+    bad_posts = [  # Format: things that we can pass to requests.post as **kwargs
+        {"data": "not even JSON"},
+        {"json": {"bad": "key"}},
+        {"json": {"data": "not:enough:colons"}},
+        {"json": {"data": "not-an-int:1640995229697:'Temperature':58.48256793121914"}},
+        {"json": {"data": "365951380:not-an-int:'Temperature':58.48256793121914"}},
+        {"json": {"data": "365951380:1640995229697:Temperature:58.48256793121914"}},  # Temperature lacks single quotes
+        {"json": {"data": "365951380:1640995229697:'Temperature':not-a-float"}}
+    ]
+
     def __init__(self, *args, **kwargs):
         # Get the server URL from an environment variable for configurability's sake
         try:
@@ -14,7 +26,7 @@ class TestApp(unittest.TestCase):
         except KeyError:
             raise KeyError(f"Could not find the environment variable {self.server_url_env_name}")
         self.temp_url = self.server_url+"/temp"
-        super(TestApp, self).__init__(*args, **kwargs)
+        super(type(self), self).__init__(*args, **kwargs)
     
     # Verify that we have a server URL
     def test_environ(self):
@@ -43,16 +55,8 @@ class TestApp(unittest.TestCase):
     
     # Verify that POST at /temp responds correctly to badly formatted requests
     def test_post_temp_bad(self):
-        tries = [
-            requests.post(self.temp_url, data="not even JSON"),
-            requests.post(self.temp_url, json={"bad": "key"}),
-            requests.post(self.temp_url, json={"data": "not:enough:colons"}),
-            requests.post(self.temp_url, json={"data": "not-an-int:1640995229697:'Temperature':58.48256793121914"}),
-            requests.post(self.temp_url, json={"data": "365951380:not-an-int:'Temperature':58.48256793121914"}),
-            requests.post(self.temp_url, json={"data": "365951380:1640995229697:Temperature:58.48256793121914"}),  # Temperature lacks single quotes
-            requests.post(self.temp_url, json={"data": "365951380:1640995229697:'Temperature':not-a-float"})
-        ]
-        for response in tries:
+        for bad_post in self.bad_posts:
+            response = requests.post(self.temp_url, **bad_post)
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.json(), {"error": "bad request"})
         pass
@@ -91,5 +95,26 @@ class TestApp(unittest.TestCase):
             self.assertEqual(response_json["device_id"], device_id)
             self.assertEqual(response_json["formatted_time"], formatted_time)
     
+    # Helper function to DELETE the /errors
+    def delete_errors(self):
+        return requests.delete(self.server_url+"/errors")
+
+    # Helper function to GET the /errors and assert that the response is formatted correctly
+    def get_errors(self):
+        response_json = requests.get(self.server_url+"/errors").json()
+        self.assertEqual(list(response_json.keys()), ["errors"])
+        return requests.get(self.server_url+"/errors").json()["errors"]
+
+    # Verify that GET /errors and DELETE /errors display the correct behavior
+    def test_errors_correctness(self):
+        for n in range(len(self.bad_posts)):  # Run the test for errors buffers of varying lengths
+            self.delete_errors()
+            error_log = []
+            for bad_post in self.bad_posts[:n]:
+                body = requests.post(self.temp_url, **bad_post).request.body
+                if isinstance(body, bytes): body = body.decode("utf-8")
+                error_log.append(body)
+            self.assertEqual(self.get_errors(), error_log)
+
 if __name__ == "__main__":
     unittest.main()

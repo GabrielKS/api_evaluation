@@ -13,6 +13,7 @@ options = {
     "require_content_type": True  # Whether to require the correct Content-Type header on POSTs
 }
 
+error_log = []
 
 # GET request at /
 # Return something sensical if anyone connects to the root
@@ -41,7 +42,6 @@ def post_temp():
     # Extract data
     if list(sent_data.keys()) != ["data"]: return handle_bad_post_temp(request)  # Ensure that the only key is "data"
     data_string = sent_data["data"]
-    app.logger.info(data_string)
     data_parts = data_string.split(":")
     if len(data_parts) != 4: return handle_bad_post_temp(request)  # Ensure that there are exactly 4 colon-separated values
 
@@ -51,10 +51,8 @@ def post_temp():
     try: epoch_ms = int(data_parts[1])
     except ValueError: return handle_bad_post_temp(request)  # Fail if part 1 cannot parse as an int
     if data_parts[2] != "'Temperature'": return handle_bad_post_temp(request)  # Fail if part 2 is not the exact string 'Temperature'
-    app.logger.info("one")
     try: temperature = float(data_parts[3])
     except ValueError: return handle_bad_post_temp(request)  # Fail if part 3 cannot parse as a float
-    app.logger.info("two")
 
     # Compose response
     if temperature >= 90:
@@ -69,7 +67,7 @@ def post_temp():
 
 # Log a badly formatted POST request at /temp and formulate a response
 def handle_bad_post_temp(request):
-    # TODO log the error
+    error_log.append(request.get_data(as_text=True))
     return {"error": "bad request"}, 400
 
 
@@ -78,7 +76,7 @@ def handle_bad_post_temp(request):
 @app.route("/errors", methods=["GET"])
 def get_errors():
     app.logger.info("get_errors")
-    return "get_errors\n"
+    return {"errors": error_log}
 
 
 # DELETE request at /errors
@@ -86,4 +84,6 @@ def get_errors():
 @app.route("/errors", methods=["DELETE"])
 def delete_errors():
     app.logger.info("delete_errors")
-    return "delete_errors\n"
+    n_entries = len(error_log)
+    error_log.clear()
+    return {"msg": f"Cleared the errors buffer of {n_entries} entries"}
