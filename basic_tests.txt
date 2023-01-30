@@ -1,5 +1,15 @@
 # For manual snooping around
+
+# The very basics
 curl http://127.0.0.1:5000/
 curl -X POST http://127.0.0.1:5000/temp
 curl -X GET http://127.0.0.1:5000/errors
 curl -X DELETE http://127.0.0.1:5000/errors
+
+# POST request at /temp
+# Badly formatted
+curl -i -X POST -H "Content-Type: application/json" -d '{"data": "this is bad formatting"}' http://127.0.0.1:5000/temp
+# Compliant, undertemp
+curl -i -X POST -H "Content-Type: application/json" -d '{"data": "365951380:1640995229697:'\''Temperature'\'':58.48256793121914"}' http://127.0.0.1:5000/temp
+# Compliant, overtemp
+curl -i -X POST -H "Content-Type: application/json" -d '{"data": "365951380:1640995229697:'\''Temperature'\'':98.48256793121914"}' http://127.0.0.1:5000/temp

@@ -1,7 +1,18 @@
 # Main app entry point
 
 from flask import Flask
+from flask import request
+from werkzeug.exceptions import BadRequest
+
+from datetime import datetime
+
 app = Flask(__name__)
+app.config["JSON_SORT_KEYS"] = False
+
+options = {
+    "require_content_type": True  # Whether to require the correct Content-Type header on POSTs
+}
+
 
 # GET request at /
 # Return something sensical if anyone connects to the root
@@ -10,12 +21,57 @@ def index_info():
     app.logger.info("index_info")
     return "Hello, world! This is my solution to the ***REMOVED*** Energy Service Engineering Data Engineer Evaluation.\n-Gabriel Konar-Steenberg\ngabrielks.com\n"
 
+
 # POST request at /temp
-# TODO build out functionality
+# TODO log errors
 @app.route("/temp", methods=["POST"])
 def post_temp():
     app.logger.info("post_temp")
-    return "post_temp\n"
+
+    # Get JSON if possible
+    try:
+        if options["require_content_type"]:
+            if request.is_json: sent_data = request.get_json()
+            else: return handle_bad_post_temp(request)
+        else:
+            sent_data = request.get_json(force=True)
+    except BadRequest:
+        return handle_bad_post_temp(request)
+
+    # Extract data
+    if list(sent_data.keys()) != ["data"]: return handle_bad_post_temp(request)  # Ensure that the only key is "data"
+    data_string = sent_data["data"]
+    app.logger.info(data_string)
+    data_parts = data_string.split(":")
+    if len(data_parts) != 4: return handle_bad_post_temp(request)  # Ensure that there are exactly 4 colon-separated values
+
+    # Parse data
+    try: device_id = int(data_parts[0])
+    except ValueError: return handle_bad_post_temp(request)  # Fail if part 0 cannot parse as an int
+    try: epoch_ms = int(data_parts[1])
+    except ValueError: return handle_bad_post_temp(request)  # Fail if part 1 cannot parse as an int
+    if data_parts[2] != "'Temperature'": return handle_bad_post_temp(request)  # Fail if part 2 is not the exact string 'Temperature'
+    app.logger.info("one")
+    try: temperature = float(data_parts[3])
+    except ValueError: return handle_bad_post_temp(request)  # Fail if part 3 cannot parse as a float
+    app.logger.info("two")
+
+    # Compose response
+    if temperature >= 90:
+        formatted_time = datetime.utcfromtimestamp(epoch_ms/1000).strftime(r"%Y/%m/%d %H:%M:%S")
+        return {
+            "overtemp": True,
+            "device_id": device_id,
+            "formatted_time": formatted_time
+        }
+    else:
+        return {"overtemp": False}
+
+# Log a badly formatted POST request at /temp and formulate a response
+def handle_bad_post_temp(request):
+    # TODO log the error
+    return {"error": "bad request"}, 400
+
 
 # GET request at /errors
 # TODO build out functionality
@@ -23,6 +79,7 @@ def post_temp():
 def get_errors():
     app.logger.info("get_errors")
     return "get_errors\n"
+
 
 # DELETE request at /errors
 # TODO build out functionality
