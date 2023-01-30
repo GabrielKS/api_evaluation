@@ -1,0 +1,5 @@
+# For manual snooping around
+curl http://127.0.0.1:5000/
+curl -X POST http://127.0.0.1:5000/temp
+curl -X GET http://127.0.0.1:5000/errors
+curl -X DELETE http://127.0.0.1:5000/errors
