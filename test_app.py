@@ -11,6 +11,7 @@ class TestApp(unittest.TestCase):
     # Several ways to POST incorrectly to /temp, to be used in multiple tests
     bad_posts = [  # Format: things that we can pass to requests.post as **kwargs
         {"data": "not even JSON"},
+        {"data": '{"data": "365951380:1640995229697:\'Temperature\':58.48256793121914"}'},  # JSON but no Content-Type
         {"json": {"bad": "key"}},
         {"json": {"data": "not:enough:colons"}},
         {"json": {"data": "not-an-int:1640995229697:'Temperature':58.48256793121914"}},
@@ -59,7 +60,6 @@ class TestApp(unittest.TestCase):
             response = requests.post(self.temp_url, **bad_post)
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.json(), {"error": "bad request"})
-        pass
 
     # Verify that POST at /temp responds correctly to undertemp requests
     def test_post_temp_undertemp(self):

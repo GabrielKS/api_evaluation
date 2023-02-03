@@ -15,3 +15,5 @@ curl -i -X POST -H "Content-Type: application/json" -d '{"data": "this is bad fo
 curl -i -X POST -H "Content-Type: application/json" -d '{"data": "365951380:1640995229697:'\''Temperature'\'':58.48256793121914"}' http://127.0.0.1:5000/temp
 # Compliant, overtemp
 curl -i -X POST -H "Content-Type: application/json" -d '{"data": "365951380:1640995229697:'\''Temperature'\'':98.48256793121914"}' http://127.0.0.1:5000/temp
+# Would be compliant, but no Content-Type
+curl -i -X POST -d '{"data": "365951380:1640995229697:'\''Temperature'\'':58.48256793121914"}' http://127.0.0.1:5000/temp
