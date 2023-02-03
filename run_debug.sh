@@ -1,1 +1,1 @@
-pipenv run flask --debug run
+pipenv run python app.py

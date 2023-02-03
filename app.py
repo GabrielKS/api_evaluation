@@ -6,7 +6,7 @@ from werkzeug.exceptions import BadRequest
 
 from datetime import datetime
 
-from .error_buffer import ErrorBuffer
+from error_buffer import ErrorBuffer
 
 app = Flask(__name__)
 app.config["JSON_SORT_KEYS"] = False
@@ -85,3 +85,6 @@ def delete_errors():
     n_entries = error_log.num_entries()
     error_log.clear()
     return {"msg": f"Cleared the errors buffer of {n_entries} entries"}
+
+if __name__ == "__main__":
+    app.run(debug=True)
