@@ -1,2 +1,2 @@
 # README
-This is my solution to the ***REMOVED*** Energy Service Engineering Data Engineer Evaluation. See `test_instructions.md` for details on the assignment.
+This is my solution to an evaluation given to me. See `test_instructions.md` for details on the assignment.

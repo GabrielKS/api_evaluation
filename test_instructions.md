@@ -1,7 +1,4 @@
-## ***REMOVED*** Energy Service Engineering Data Engineer Evaluation
-
-### Welcome to the Data Engineer Evaluation. This is an precursor set of tasks to those you will be expcted to perform as part of the Energy Service Engineering Infrastructure and Analytics team.
-#### Please reach out if you have any questions
+## Evaluation
 
 Create an API that accepts:
 - `POST` request at `/temp`

@@ -20,7 +20,7 @@ error_log = []
 @app.route("/")
 def index_info():
     app.logger.info("index_info")
-    return "Hello, world! This is my solution to the ***REMOVED*** Energy Service Engineering Data Engineer Evaluation.\n-Gabriel Konar-Steenberg\ngabrielks.com\n"
+    return "Hello, world! This is a sample API I developed for an evaluation.\n-Gabriel Konar-Steenberg\ngabrielks.com\n"
 
 
 # POST request at /temp

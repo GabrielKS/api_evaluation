@@ -1,5 +1,5 @@
 # Unit tests for the app
-# Note: the server must be running and its URL must be given by the COMPANYNAME_SERVER_URL environment variable for this to work
+# Note: the server must be running and its URL must be given by the EVAL_SERVER_URL environment variable for this to work
 
 import os
 import unittest
@@ -7,7 +7,7 @@ import requests
 
 class TestApp(unittest.TestCase):
     # Name of the environment variable we get the server URL from
-    server_url_env_name = "COMPANYNAME_SERVER_URL"
+    server_url_env_name = "EVAL_SERVER_URL"
     # Several ways to POST incorrectly to /temp, to be used in multiple tests
     bad_posts = [  # Format: things that we can pass to requests.post as **kwargs
         {"data": "not even JSON"},
