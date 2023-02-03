@@ -1,0 +1,74 @@
+openapi: 3.1.0
+info:
+  title: Evaluation API
+  description: This is a sample API I, Gabriel Konar-Steenberg, developed for an evaluation.
+  version: 1.0.0
+
+servers:
+  - url: http://apieval.gabrielks.com
+    description: Main (production) server
+
+paths:
+  /temp:
+    post:
+      summary: Accepts some JSON data representing a temperature reading and checks for exceedance of a maximum temperature.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                type: string
+                example: 365951380:1640995229697:'Temperature':58.48256793121914
+      responses:
+        '200':
+          description: If over temperature threshold, provides some more data, otherwise indicates under temperature threshold.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overtemp:
+                    type: boolean
+                    example: true
+                  device_id:
+                    type: integer
+                    format: int32
+                    example: 365951380
+                  formatted_time:
+                    type: string
+                    format: int64
+                    example: 2022/01/01 00:00:29
+        '400':
+          description: Incorrectly formatted request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: bad request
+  /errors:
+    get:
+      summary: Returns all incorrectly formatted data strings.
+      responses:
+        '200':
+          description: A list of incorrectly formatted data strings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                      example: {"data": "incorrectly:formatted:data"}
+    delete:
+      summary: Clears the errors buffer.
+      responses:
+        '200':
+          description: The errors buffer has been cleared. Any response returned is an implementation detail subject to change.

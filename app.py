@@ -1,14 +1,14 @@
 # Main app entry point
 
 from flask import Flask
-from flask import request
+from flask import request, render_template
 from werkzeug.exceptions import BadRequest
 
 from datetime import datetime
 
 from error_buffer import ErrorBuffer
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="")
 app.config["JSON_SORT_KEYS"] = False
 
 options = {
@@ -18,9 +18,10 @@ options = {
 # GET request at /
 # Return something sensical if anyone connects to the root
 @app.route("/")
+@app.route("/index.html")
 def index_info():
     app.logger.info("index_info")
-    return "Hello, world! This is a sample API I developed for an evaluation.\n-Gabriel Konar-Steenberg\ngabrielks.com\n"
+    return render_template("index.html")
 
 
 # POST request at /temp
