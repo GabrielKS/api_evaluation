@@ -6,6 +6,8 @@ from werkzeug.exceptions import BadRequest
 
 from datetime import datetime
 
+from .error_buffer import ErrorBuffer
+
 app = Flask(__name__)
 app.config["JSON_SORT_KEYS"] = False
 
@@ -13,7 +15,7 @@ options = {
     "require_content_type": True  # Whether to require the correct Content-Type header on POSTs
 }
 
-error_log = []
+error_log = ErrorBuffer()
 
 # GET request at /
 # Return something sensical if anyone connects to the root
@@ -24,7 +26,6 @@ def index_info():
 
 
 # POST request at /temp
-# TODO log errors
 @app.route("/temp", methods=["POST"])
 def post_temp():
     app.logger.info("post_temp")
@@ -72,18 +73,16 @@ def handle_bad_post_temp(request):
 
 
 # GET request at /errors
-# TODO build out functionality
 @app.route("/errors", methods=["GET"])
 def get_errors():
     app.logger.info("get_errors")
-    return {"errors": error_log}
+    return {"errors": error_log.to_list()}
 
 
 # DELETE request at /errors
-# TODO build out functionality
 @app.route("/errors", methods=["DELETE"])
 def delete_errors():
     app.logger.info("delete_errors")
-    n_entries = len(error_log)
+    n_entries = error_log.num_entries()
     error_log.clear()
     return {"msg": f"Cleared the errors buffer of {n_entries} entries"}
