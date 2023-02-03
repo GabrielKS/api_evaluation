@@ -15,8 +15,6 @@ options = {
     "require_content_type": True  # Whether to require the correct Content-Type header on POSTs
 }
 
-error_log = ErrorBuffer()
-
 # GET request at /
 # Return something sensical if anyone connects to the root
 @app.route("/")
@@ -68,7 +66,7 @@ def post_temp():
 
 # Log a badly formatted POST request at /temp and formulate a response
 def handle_bad_post_temp(request):
-    error_log.append(request.get_data(as_text=True))
+    ErrorBuffer().append(request.get_data(as_text=True))
     return {"error": "bad request"}, 400
 
 
@@ -76,13 +74,14 @@ def handle_bad_post_temp(request):
 @app.route("/errors", methods=["GET"])
 def get_errors():
     app.logger.info("get_errors")
-    return {"errors": error_log.to_list()}
+    return {"errors": ErrorBuffer().to_list()}
 
 
 # DELETE request at /errors
 @app.route("/errors", methods=["DELETE"])
 def delete_errors():
     app.logger.info("delete_errors")
+    error_log = ErrorBuffer()
     n_entries = error_log.num_entries()
     error_log.clear()
     return {"msg": f"Cleared the errors buffer of {n_entries} entries"}
